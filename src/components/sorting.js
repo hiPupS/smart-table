@@ -1,4 +1,4 @@
-import {sortMap} from "../lib/utils.js";
+import { sortMap } from "../lib/utils.js";
 
 export const initSorting = (columns) => {
     let field = null;

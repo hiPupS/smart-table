@@ -1,50 +1,32 @@
-/**
- * Клонирует шаблон и собирает все элементы с атрибутом data-name
- */
-export function cloneTemplate(templateId) {
-    const template = document.getElementById(templateId);
-    const clone = template.content.firstElementChild.cloneNode(true);
-    const elements = Array.from(clone.querySelectorAll('[data-name]'))
-        .reduce((acc, el) => ({ ...acc, [el.dataset.name]: el }), {});
-    return { container: clone, elements };
+// Утилита для клонирования шаблона
+export function cloneTemplate(template) {
+    const content = template.content.firstElementChild.cloneNode(true);
+    const elements = {};
+    content.querySelectorAll('[data-element]').forEach(el => {
+        elements[el.dataset.element] = el;
+    });
+    return { container: content, elements };
 }
 
-/**
- * Преобразует FormData в обычный объект
- */
-export function processFormData(formData) {
-    return Object.fromEntries(formData.entries());
-}
-
-/**
- * Карта переключения сортировки
- */
+// Маппинг для сортировки
 export const sortMap = {
-    'none': 'asc',
-    'asc': 'desc',
-    'desc': 'none'
+    none: 'asc',
+    asc: 'desc',
+    desc: 'none'
 };
 
-/**
- * Индексация массива по уникальному полю
- */
-export const makeIndex = (arr, field, fn) =>
-    arr.reduce((acc, item) => ({ ...acc, [item[field]]: fn(item) }), {});
+// Построение массива страниц для пагинации
+export function getPages(current, total, max = 5) {
+    const pages = [];
+    let start = Math.max(1, current - Math.floor(max / 2));
+    let end = Math.min(total, start + max - 1);
 
-/**
- * Возвращает массив номеров страниц
- */
-export function getPages(currentPage, maxPage, limit = 5) {
-    currentPage = Math.max(1, Math.min(maxPage, currentPage));
-    limit = Math.min(maxPage, limit);
-
-    let start = Math.max(1, currentPage - Math.floor(limit / 2));
-    let end = Math.min(maxPage, start + limit - 1);
-
-    if (end > maxPage) {
-        end = maxPage;
-        start = Math.max(1, end - limit + 1);
+    if (end - start + 1 < max) {
+        start = Math.max(1, end - max + 1);
     }
 
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    for (let i = start; i <= end; i++) {
+        pages.push(i);
+    }
+    return pages;
 }
