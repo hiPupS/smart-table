@@ -1,32 +1,26 @@
-// Утилита для клонирования шаблона
-export function cloneTemplate(template) {
-    const content = template.content.firstElementChild.cloneNode(true);
-    const elements = {};
-    content.querySelectorAll('[data-element]').forEach(el => {
-        elements[el.dataset.element] = el;
-    });
-    return { container: content, elements };
+export function processFormData(formData) {
+    return Object.fromEntries(formData.entries());
 }
 
-// Маппинг для сортировки
+export function cloneTemplate(templateId) {
+    const template = document.getElementById(templateId);
+    const clone = template.content.firstElementChild.cloneNode(true);
+    const elements = Array.from(clone.querySelectorAll('[data-name]'))
+        .reduce((acc, el) => ({...acc, [el.dataset.name]: el}), {});
+    return {container: clone, elements};
+}
+
 export const sortMap = {
-    none: 'asc',
-    asc: 'desc',
-    desc: 'none'
+    'none': 'asc',
+    'asc': 'desc',
+    'desc': 'none'
 };
 
-// Построение массива страниц для пагинации
-export function getPages(current, total, max = 5) {
-    const pages = [];
-    let start = Math.max(1, current - Math.floor(max / 2));
-    let end = Math.min(total, start + max - 1);
-
-    if (end - start + 1 < max) {
-        start = Math.max(1, end - max + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
-        pages.push(i);
-    }
-    return pages;
+export function getPages(current, total, visibleCount = 5) {
+    let start = Math.max(1, current - Math.floor(visibleCount/2));
+    let end = Math.min(total, start + visibleCount - 1);
+    return Array.from({length: end - start + 1}, (_, i) => start + i);
 }
+
+export const makeIndex = (arr, field, fn) => 
+    arr.reduce((acc, item) => ({...acc, [item[field]]: fn(item)}), {});

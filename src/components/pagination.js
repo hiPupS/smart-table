@@ -1,4 +1,4 @@
-import { getPages } from "../lib/utils.js";
+import {getPages} from "../lib/utils.js";
 
 export const initPagination = ({pages, fromRow, toRow, totalRows}, createPage) => {
     const pageTemplate = pages.firstElementChild.cloneNode(true);
@@ -30,7 +30,6 @@ export const initPagination = ({pages, fromRow, toRow, totalRows}, createPage) =
             return createPage(el, pageNum, pageNum === page);
         }));
 
-        state.page = page;
         return data.slice(skip, skip + rowsPerPage);
     };
 };
