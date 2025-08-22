@@ -1,35 +1,31 @@
-import {sortMap} from "../lib/utils.js";
+import {sortMap} from "../lib/sort.js";
 
-export const initSorting = (columns) => {
-    let field = null;
-    let order = 'none';
+export function initSorting(columns) {
+    return (query, state, action) => {
+        let field = null;
+        let order = null;
 
-    return (data, state, action) => {
-        if (action?.dataset?.field) {
+        if (action && action.name === 'sort') {
             action.dataset.value = sortMap[action.dataset.value];
             field = action.dataset.field;
             order = action.dataset.value;
 
-            columns.forEach(col => {
-                if (col.dataset.field !== field) col.dataset.value = 'none';
+            columns.forEach(column => {
+                if (column.dataset.field !== action.dataset.field) {
+                    column.dataset.value = 'none';
+                }
+            });
+        } else {
+            columns.forEach(column => {
+                if (column.dataset.value !== 'none') {
+                    field = column.dataset.field;
+                    order = column.dataset.value;
+                }
             });
         }
 
-        columns.forEach(col => {
-            if (col.dataset.value !== 'none') {
-                field = col.dataset.field;
-                order = col.dataset.value;
-            }
-        });
+        const sort = (field && order !== 'none') ? `${field}:${order}` : null;
 
-        if (order === 'none') return data;
-
-        return [...data].sort((a, b) => {
-            const valA = a[field];
-            const valB = b[field];
-            return order === 'asc' ? 
-                valA > valB ? 1 : -1 : 
-                valA < valB ? 1 : -1;
-        });
-    };
-};
+        return sort ? Object.assign({}, query, { sort }) : query;
+    }
+}

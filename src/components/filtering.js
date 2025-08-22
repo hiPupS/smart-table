@@ -1,30 +1,39 @@
-export function initFiltering(elements, indexes) {
-    // Заполнение select
-    Object.keys(indexes).forEach(name => {
-        const select = elements[name];
-        select.innerHTML = '<option value="">Все</option>';
-        indexes[name].forEach(value => {
-            select.append(new Option(value, value));
-        });
-    });
+export function initFiltering(elements) {
+    const updateIndexes = (elements, indexes) => {
+        Object.keys(indexes).forEach((elementName) => {
+            elements[elementName].append(...Object.values(indexes[elementName]).map(name => {
+                const el = document.createElement('option');
+                el.textContent = name;
+                el.value = name;
+                return el;
+            }))
+        })
+    }
 
-    return (data, state, action) => {
-        if (action?.name === 'clear') {
-            const field = action.dataset.field;
-            const input = elements[field] || 
-                         action.closest('.filter-group')?.querySelector('input, select');
-            if (input) input.value = '';
+    const applyFiltering = (query, state, action) => {
+        if (action && action.name === "clear") {
+            const parent = action.closest('.filter-wrapper');
+            const input = parent.querySelector('input');
+            const field = input.dataset.field;
+
+            input.value = "";
+            state[field] = "";
         }
 
-        return data.filter(row => {
-            return Object.entries(state).every(([key, value]) => {
-                if (!value) return true;
-                if (key === 'searchBySeller') return row.seller === value;
-                if (key === 'searchByCustomer') return row.customer === value;
-                if (key === 'searchByDateFrom') return new Date(row.date) >= new Date(value);
-                if (key === 'searchByDateTo') return new Date(row.date) <= new Date(value);
-                return true;
-            });
-        });
-    };
+        const filter = {};
+        Object.keys(elements).forEach(key => {
+            if (elements[key]) {
+                if (['INPUT', 'SELECT'].includes(elements[key].tagName) && elements[key].value) {
+                    filter[`filter[${elements[key].name}]`] = elements[key].value;
+                }
+            }
+        })
+
+        return Object.keys(filter).length ? Object.assign({}, query, filter) : query;
+    }
+
+    return {
+        updateIndexes,
+        applyFiltering
+    }
 }
